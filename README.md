@@ -1,70 +1,129 @@
-# නිල්මිණි බේකර්ස් - Bakery Management System
+# Bakery Management System
 
-මෙම පද්ධතිය බේකරි කළමනාකරණය සඳහා සම්පූර්ණ විසඳුමක් සපයයි.
+The **Bakery Management System** is a full-stack web application designed to streamline the operations of a bakery business.  
+It provides features such as sales tracking, daily profit calculation, order management, customer handling, and inventory management.
 
-## Features
 
-1. **දවස අන්තිමේ ලැබිච්ච ගාන** - Daily revenue tracking
-2. **විකිනී ආහාර ප්‍රමාණය විශ්ලේෂණය** - Sales analysis and reporting
-3. **දවසේ හම්බවෙච්ච ලාබය** - Daily profit calculation
-4. **Cash/Card වෙන වෙනම ගණනය** - Payment method separation
-5. **Take away/Dining වෙන වෙනම** - Service type tracking
-6. **පාරිභෝගික දත්ත සමුදාය** - Customer database
-7. **විකුණන ආහාර ලැයිස්තුව** - Product sales tracking
-8. **දුරකථන ඇණවුම්** - Phone order integration
-9. **ඉන්වෙන්ටරි කළමනාකරණය** - Inventory management
 
-## Technology Stack
+## ✨ Features
 
-- **Frontend**: React + Vite
-- **Backend**: Node.js + Express.js
-- **Database**: MongoDB
-- **Styling**: Tailwind CSS
+- Track daily revenue and profits  
+- Sales analytics & reporting  
+- Separate cash and card payments  
+- Manage Takeaway & Dine-in orders  
+- Customer database  
+- Product sales tracking  
+- Phone order management  
+- Inventory management  
 
-## Installation
 
-```bash
-# Install all dependencies
-npm run install-all
 
-# Seed database with sample data (optional)
-npm run seed
+## 🛠 Tech Stack
 
-# Start development servers
-npm run dev
-```
+- **Frontend**: React + Vite  
+- **Backend**: Node.js + Express.js  
+- **Database**: MongoDB  
+- **Styling**: Tailwind CSS  
 
-## Quick Start
 
-1. **Install Dependencies:**
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js & npm installed  
+- MongoDB (local or MongoDB Atlas)  
+
+### Installation
+
+1. Clone the repository:  
+   ```bash
+   git clone https://github.com/janithsuraweera/Bakery-System.git
+   cd Bakery-System
+   
+
+2. Install dependencies:
+
    ```bash
    npm run install-all
    ```
 
-2. **Setup MongoDB:**
-   - Install MongoDB locally or use MongoDB Atlas
-   - Update connection string in `backend/.env`
+3. Configure MongoDB connection in `backend/.env` file.
 
-3. **Seed Sample Data:**
+4. Seed initial data (optional):
+
    ```bash
    npm run seed
    ```
 
-4. **Start Application:**
+5. Start the development server:
+
    ```bash
    npm run dev
    ```
 
-5. **Open Browser:**
+6. Open the app in your browser:
+
    ```
    http://localhost:3000
    ```
 
-## Project Structure
+
+
+## 📂 Project Structure
 
 ```
 bakery-system/
 ├── backend/          # Express.js API server
-├── frontend/         # React Vite application
-└── package.json      # Root package configuration
+├── frontend/         # React + Vite app
+└── package.json      # Root project config
+```
+
+
+
+## 👥 User Roles (Example)
+
+| Role     | Permissions                                   |
+| -------- | --------------------------------------------- |
+| Admin    | Manage users, inventory, and view all reports |
+| Staff    | Handle sales, manage orders, assist customers |
+| Customer | Place orders and view order history           |
+
+
+
+## 🧪 Testing
+
+If tests are included, run:
+
+```bash
+npm run test
+```
+
+
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repo
+2. Create a new branch
+3. Make your changes
+4. Submit a pull request
+
+
+## 📜 License
+
+This project is licensed under the **MIT License**.
+See the `LICENSE` file for more details.
+
+
+
+
+## 📧 Contact
+
+* Author: Janith Suraweera
+* GitHub: [janithsuraweera](https://github.com/janithsuraweera)
+* Email: janithsuraweera1@gmail.com
+
+```
+Do you want me to make it **short and simple** (just features + setup) or keep this **detailed version** with roles, contributing, and license?
 ```

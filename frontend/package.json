@@ -19,7 +19,8 @@
     "react-hot-toast": "^2.4.1",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.20.1",
-    "recharts": "^2.8.0"
+    "chart.js": "^4.4.0",
+    "react-chartjs-2": "^5.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

@@ -141,7 +141,7 @@ router.post('/', [
       return res.status(400).json({ errors: errors.array() });
     }
     
-    const { items, customerPhone, paymentMethod, serviceType, notes } = req.body;
+    const { items, customerPhone, paymentMethod, serviceType, notes, discount = 0, cashAmount = 0, cardAmount = 0 } = req.body;
     
     // Generate order number
     const orderCount = await Order.countDocuments();
@@ -168,7 +168,7 @@ router.post('/', [
       });
     }
     
-    const total = subtotal; // No discount for now
+    const total = Math.max(0, subtotal - Number(discount || 0));
     
     // Find or create customer
     let customer = null;
@@ -192,6 +192,9 @@ router.post('/', [
       subtotal,
       total,
       paymentMethod,
+      discount: Number(discount || 0),
+      cashAmount: Number(cashAmount || 0),
+      cardAmount: Number(cardAmount || 0),
       serviceType,
       notes
     });

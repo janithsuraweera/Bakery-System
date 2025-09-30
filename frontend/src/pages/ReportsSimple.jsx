@@ -12,32 +12,7 @@ import {
   Package
 } from 'lucide-react'
 import { ordersAPI } from '../services/api'
-import { format, subDays, startOfDay, endOfDay } from 'date-fns'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-import { Bar, Line, Pie } from 'react-chartjs-2'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-)
+import { format, subDays } from 'date-fns'
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState({
@@ -58,67 +33,6 @@ const Reports = () => {
     ['dailyRevenue', dateRange.endDate],
     () => ordersAPI.getDailyRevenue(dateRange.endDate)
   )
-
-  // Generate daily data for the selected range
-  const generateDailyData = () => {
-    const days = []
-    const start = new Date(dateRange.startDate)
-    const end = new Date(dateRange.endDate)
-    
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      days.push({
-        date: format(d, 'MMM dd'),
-        fullDate: format(d, 'yyyy-MM-dd')
-      })
-    }
-    
-    return days
-  }
-
-  const dailyData = generateDailyData()
-
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4']
-
-  // Chart data preparation
-  const lineChartData = {
-    labels: dailyData.map(d => d.date),
-    datasets: [
-      {
-        label: 'Daily Revenue',
-        data: dailyData.map(d => Math.floor(Math.random() * 5000) + 1000), // Mock data for now
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4
-      }
-    ]
-  }
-
-  const pieChartData = {
-    labels: ['Cash', 'Card'],
-    datasets: [
-      {
-        data: [
-          dailyRevenue?.data?.cashRevenue || 0,
-          dailyRevenue?.data?.cardRevenue || 0
-        ],
-        backgroundColor: ['#F59E0B', '#3B82F6'],
-        borderWidth: 0
-      }
-    ]
-  }
-
-  const barChartData = {
-    labels: salesAnalysis?.data?.productSales?.slice(0, 10).map(p => p.name) || [],
-    datasets: [
-      {
-        label: 'Quantity Sold',
-        data: salesAnalysis?.data?.productSales?.slice(0, 10).map(p => p.quantity) || [],
-        backgroundColor: '#3B82F6',
-        borderColor: '#3B82F6',
-        borderWidth: 1
-      }
-    ]
-  }
 
   const reportTypes = [
     { value: 'daily', label: 'Daily Sales', icon: Calendar },
@@ -269,169 +183,6 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* Charts */}
-      {reportType === 'daily' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="card">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Daily Revenue Trend</h3>
-            <div className="h-80">
-              <Line 
-                data={lineChartData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'top',
-                    },
-                    tooltip: {
-                      callbacks: {
-                        label: function(context) {
-                          return `Revenue: Rs. ${context.parsed.y.toLocaleString()}`;
-                        }
-                      }
-                    }
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      ticks: {
-                        callback: function(value) {
-                          return 'Rs. ' + value.toLocaleString();
-                        }
-                      }
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
-          
-          <div className="card">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Methods</h3>
-            <div className="h-80">
-              <Pie 
-                data={pieChartData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'bottom',
-                    },
-                    tooltip: {
-                      callbacks: {
-                        label: function(context) {
-                          return context.label + ': Rs. ' + context.parsed.toLocaleString();
-                        }
-                      }
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {reportType === 'products' && salesAnalysis?.data?.productSales && (
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Top Selling Products</h3>
-          <div className="h-80">
-            <Bar 
-              data={barChartData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'top',
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: function(context) {
-                        return 'Quantity Sold: ' + context.parsed.y;
-                      }
-                    }
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      stepSize: 1
-                    }
-                  },
-                  x: {
-                    ticks: {
-                      maxRotation: 45,
-                      minRotation: 45
-                    }
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Product Sales Table */}
-      {reportType === 'products' && salesAnalysis?.data?.productSales && (
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Product Performance</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity Sold
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Revenue
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cost
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Profit
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Profit Margin
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {salesAnalysis.data.productSales.map((product, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {product.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.quantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Rs. {product.revenue.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Rs. {product.cost.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Rs. {product.profit.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.revenue > 0 ? ((product.profit / product.revenue) * 100).toFixed(1) : 0}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       {/* Service Type Analysis */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="card">
@@ -517,6 +268,63 @@ const Reports = () => {
           </div>
         </div>
       </div>
+
+      {/* Product Sales Table */}
+      {reportType === 'products' && salesAnalysis?.data?.productSales && (
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Product Performance</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantity Sold
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Revenue
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cost
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Profit
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Profit Margin
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {salesAnalysis.data.productSales.map((product, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {product.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.quantity}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Rs. {product.revenue.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Rs. {product.cost.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Rs. {product.profit.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.revenue > 0 ? ((product.profit / product.revenue) * 100).toFixed(1) : 0}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -12,9 +12,11 @@ import {
 } from 'lucide-react'
 import { ordersAPI } from '../services/api'
 import { format } from 'date-fns'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const Dashboard = () => {
   const today = format(new Date(), 'yyyy-MM-dd')
+  const { t } = useLanguage()
   
   const { data: dailyRevenue, isLoading: revenueLoading } = useQuery(
     ['dailyRevenue', today],
@@ -34,7 +36,7 @@ const Dashboard = () => {
 
   const stats = [
     {
-      name: 'දවසේ ආදායම',
+      name: t('dashboard.dailyRevenue'),
       value: dailyRevenue?.data?.totalRevenue || 0,
       icon: DollarSign,
       color: 'text-green-600',
@@ -42,7 +44,7 @@ const Dashboard = () => {
       format: 'currency'
     },
     {
-      name: 'අද ඇණවුම්',
+      name: t('dashboard.todayOrders'),
       value: dailyRevenue?.data?.orderCount || 0,
       icon: ShoppingCart,
       color: 'text-blue-600',
@@ -50,7 +52,7 @@ const Dashboard = () => {
       format: 'number'
     },
     {
-      name: 'Cash ගෙවීම්',
+      name: t('dashboard.cashPayments'),
       value: dailyRevenue?.data?.cashRevenue || 0,
       icon: CreditCard,
       color: 'text-yellow-600',
@@ -58,7 +60,7 @@ const Dashboard = () => {
       format: 'currency'
     },
     {
-      name: 'Card ගෙවීම්',
+      name: t('dashboard.cardPayments'),
       value: dailyRevenue?.data?.cardRevenue || 0,
       icon: CreditCard,
       color: 'text-purple-600',
@@ -69,21 +71,21 @@ const Dashboard = () => {
 
   const serviceStats = [
     {
-      name: 'Take Away',
+      name: t('dashboard.takeAway'),
       value: dailyRevenue?.data?.takeawayRevenue || 0,
       icon: Package,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100'
     },
     {
-      name: 'Dining',
+      name: t('dashboard.dining'),
       value: dailyRevenue?.data?.diningRevenue || 0,
       icon: Utensils,
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-100'
     },
     {
-      name: 'Phone Orders',
+      name: t('dashboard.phoneOrders'),
       value: dailyRevenue?.data?.phoneRevenue || 0,
       icon: Phone,
       color: 'text-pink-600',
@@ -110,9 +112,9 @@ const Dashboard = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">
-          {format(new Date(), 'EEEE, MMMM do, yyyy')} - දෛනික විකුණුම් විශ්ලේෂණය
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          {format(new Date(), 'EEEE, MMMM do, yyyy')} - {t('dashboard.subtitle')}
         </p>
       </div>
 
@@ -163,7 +165,7 @@ const Dashboard = () => {
       {/* Top Selling Products */}
       {salesAnalysis?.data?.productSales && (
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">අද වැඩියෙන් විකුණු ආහාර</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{t('dashboard.topSelling')}</h3>
           <div className="space-y-3">
             {salesAnalysis.data.productSales
               .sort((a, b) => b.quantity - a.quantity)
@@ -186,23 +188,23 @@ const Dashboard = () => {
 
       {/* Quick Actions */}
       <div className="card">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{t('dashboard.quickActions')}</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <button className="btn btn-primary">
             <ShoppingCart className="h-4 w-4 mr-2" />
-            New Order
+            {t('dashboard.newOrder')}
           </button>
           <button className="btn btn-secondary">
             <Package className="h-4 w-4 mr-2" />
-            Add Product
+            {t('dashboard.addProduct')}
           </button>
           <button className="btn btn-secondary">
             <Users className="h-4 w-4 mr-2" />
-            Add Customer
+            {t('dashboard.addCustomer')}
           </button>
           <button className="btn btn-secondary">
             <TrendingUp className="h-4 w-4 mr-2" />
-            View Reports
+            {t('dashboard.viewReports')}
           </button>
         </div>
       </div>

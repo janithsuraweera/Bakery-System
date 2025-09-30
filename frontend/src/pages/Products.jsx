@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { productsAPI } from '../services/api'
 import toast from 'react-hot-toast'
+import NewProductModal from '../components/NewProductModal'
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -282,6 +283,8 @@ const Products = () => {
           </div>
         </div>
       )}
+      {/* Add Product Modal */}
+      <NewProductModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} />
     </div>
   )
 }

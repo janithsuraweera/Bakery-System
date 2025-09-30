@@ -6,9 +6,11 @@ const Customer = require('../models/Customer');
 const { body, validationResult } = require('express-validator');
 const Inventory = require('../models/Inventory');
 const { notifyLowStock } = require('../utils/notify');
+const { authRequired, requireRole } = require('../middleware/auth');
+const { writeAudit } = require('../utils/audit');
 
 // Get all orders
-router.get('/', async (req, res) => {
+router.get('/', authRequired, requireRole('admin', 'manager', 'cashier'), async (req, res) => {
   try {
     const { date, status, serviceType } = req.query;
     let filter = {};
@@ -35,7 +37,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get daily revenue
-router.get('/daily-revenue', async (req, res) => {
+router.get('/daily-revenue', authRequired, requireRole('admin', 'manager'), async (req, res) => {
   try {
     const { date } = req.query;
     const targetDate = date ? new Date(date) : new Date();
@@ -81,7 +83,7 @@ router.get('/daily-revenue', async (req, res) => {
 });
 
 // Get sales analysis
-router.get('/sales-analysis', async (req, res) => {
+router.get('/sales-analysis', authRequired, requireRole('admin', 'manager'), async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     const start = startDate ? new Date(startDate) : new Date();
@@ -132,7 +134,7 @@ router.get('/sales-analysis', async (req, res) => {
 });
 
 // Create new order
-router.post('/', [
+router.post('/', authRequired, requireRole('admin', 'manager', 'cashier'), [
   body('items').isArray().withMessage('Items must be an array'),
   body('paymentMethod').isIn(['cash', 'card', 'both']).withMessage('Invalid payment method'),
   body('serviceType').isIn(['takeaway', 'dining', 'phone']).withMessage('Invalid service type')
@@ -238,6 +240,7 @@ router.post('/', [
       }
     }
     
+    try { await writeAudit(req, { action: 'create', resource: 'order', resourceId: order._id.toString(), metadata: { orderNumber } }); } catch (_) {}
     res.status(201).json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -245,7 +248,7 @@ router.post('/', [
 });
 
 // Update order status
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', authRequired, requireRole('admin', 'manager', 'cashier'), async (req, res) => {
   try {
     const { status } = req.body;
     const order = await Order.findByIdAndUpdate(
@@ -261,6 +264,7 @@ router.patch('/:id/status', async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
     
+    try { await writeAudit(req, { action: 'update-status', resource: 'order', resourceId: req.params.id, metadata: { status } }); } catch (_) {}
     res.json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });

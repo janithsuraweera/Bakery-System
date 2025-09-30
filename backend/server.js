@@ -15,10 +15,12 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/customers', require('./routes/customers'));
 app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/audit', require('./routes/audit'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

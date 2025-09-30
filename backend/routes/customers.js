@@ -3,6 +3,8 @@ const router = express.Router();
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const { body, validationResult } = require('express-validator');
+const { authRequired, requireRole } = require('../middleware/auth');
+const { writeAudit } = require('../utils/audit');
 
 // Get all customers
 router.get('/', async (req, res) => {
@@ -52,7 +54,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new customer
-router.post('/', [
+router.post('/', authRequired, requireRole('admin', 'manager', 'cashier'), [
   body('name').notEmpty().withMessage('Customer name is required'),
   body('phone').notEmpty().withMessage('Phone number is required')
 ], async (req, res) => {
@@ -64,6 +66,7 @@ router.post('/', [
     
     const customer = new Customer(req.body);
     await customer.save();
+    try { await writeAudit(req, { action: 'create', resource: 'customer', resourceId: customer._id.toString(), metadata: { name: customer.name, phone: customer.phone } }); } catch (_) {}
     res.status(201).json(customer);
   } catch (error) {
     if (error.code === 11000) {
@@ -75,7 +78,7 @@ router.post('/', [
 });
 
 // Update customer
-router.put('/:id', async (req, res) => {
+router.put('/:id', authRequired, requireRole('admin', 'manager'), async (req, res) => {
   try {
     const customer = await Customer.findByIdAndUpdate(
       req.params.id,
@@ -87,6 +90,7 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Customer not found' });
     }
     
+    try { await writeAudit(req, { action: 'update', resource: 'customer', resourceId: req.params.id, metadata: req.body }); } catch (_) {}
     res.json(customer);
   } catch (error) {
     res.status(500).json({ message: error.message });

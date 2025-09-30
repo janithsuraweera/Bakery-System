@@ -4,6 +4,8 @@ const Inventory = require('../models/Inventory');
 const Product = require('../models/Product');
 const { body, validationResult } = require('express-validator');
 const { notifyLowStock } = require('../utils/notify');
+const { authRequired, requireRole } = require('../middleware/auth');
+const { writeAudit } = require('../utils/audit');
 
 // Get inventory status
 router.get('/', async (req, res) => {
@@ -42,7 +44,7 @@ router.get('/product/:productId', async (req, res) => {
 });
 
 // Update inventory quantity
-router.patch('/:id/quantity', [
+router.patch('/:id/quantity', authRequired, requireRole('admin', 'manager'), [
   body('quantity').isNumeric().withMessage('Quantity must be a number')
 ], async (req, res) => {
   try {
@@ -71,6 +73,7 @@ router.patch('/:id/quantity', [
         await notifyLowStock([inventory]);
       }
     } catch (_) {}
+    try { await writeAudit(req, { action: 'update-quantity', resource: 'inventory', resourceId: req.params.id, metadata: { quantity } }); } catch (_) {}
     res.json(inventory);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -78,7 +81,7 @@ router.patch('/:id/quantity', [
 });
 
 // Add stock
-router.post('/add-stock', [
+router.post('/add-stock', authRequired, requireRole('admin', 'manager'), [
   body('productId').notEmpty().withMessage('Product ID is required'),
   body('quantity').isNumeric().withMessage('Quantity must be a number')
 ], async (req, res) => {
@@ -117,6 +120,7 @@ router.post('/add-stock', [
         await notifyLowStock([inventory]);
       }
     } catch (_) {}
+    try { await writeAudit(req, { action: 'add-stock', resource: 'inventory', resourceId: inventory._id.toString(), metadata: { productId, quantity } }); } catch (_) {}
     res.json(inventory);
   } catch (error) {
     res.status(500).json({ message: error.message });

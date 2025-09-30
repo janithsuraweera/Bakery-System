@@ -4,6 +4,8 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Customer = require('../models/Customer');
 const { body, validationResult } = require('express-validator');
+const Inventory = require('../models/Inventory');
+const { notifyLowStock } = require('../utils/notify');
 
 // Get all orders
 router.get('/', async (req, res) => {
@@ -209,11 +211,31 @@ router.post('/', [
       await customer.save();
     }
     
-    // Update inventory
+    // Update inventory and trigger low-stock alerts when thresholds are crossed
+    const lowStockHit = [];
     for (const item of orderItems) {
       const product = await Product.findById(item.product);
       product.stock -= item.quantity;
       await product.save();
+      // Mirror to Inventory if exists, preserving minQuantity
+      const inv = await Inventory.findOne({ product: product._id });
+      if (inv) {
+        inv.quantity = product.stock;
+        inv.lastUpdated = new Date();
+        await inv.save();
+        if (inv.quantity <= inv.minQuantity) {
+          lowStockHit.push({ product: product._id, quantity: inv.quantity, minQuantity: inv.minQuantity, productRef: inv.product });
+        }
+      }
+    }
+    if (lowStockHit.length > 0) {
+      try {
+        const detailed = await Inventory.find({ product: { $in: lowStockHit.map(i => i.product) } })
+          .populate('product', 'name');
+        await notifyLowStock(detailed);
+      } catch (_) {
+        // swallow notification errors to not block order creation
+      }
     }
     
     res.status(201).json(order);

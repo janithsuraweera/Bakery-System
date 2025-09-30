@@ -8,7 +8,7 @@ import Orders from './pages/Orders'
 import Products from './pages/Products'
 import Customers from './pages/Customers'
 import Inventory from './pages/Inventory'
-import Reports from './pages/Reports'
+import Reports from './pages/ReportsSimple'
 
 const queryClient = new QueryClient()
 

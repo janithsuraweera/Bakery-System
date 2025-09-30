@@ -11,6 +11,7 @@ import {
   TrendingDown
 } from 'lucide-react'
 import { productsAPI } from '../services/api'
+import { exportToCsv } from '../utils/print'
 import toast from 'react-hot-toast'
 import NewProductModal from '../components/NewProductModal'
 
@@ -112,6 +113,22 @@ const Products = () => {
           <h1 className="text-2xl font-bold text-gray-900">Products</h1>
           <p className="text-gray-600">Manage your bakery products and inventory</p>
         </div>
+        <div className="flex items-center gap-2 mt-4 sm:mt-0">
+          <button
+            onClick={() => {
+              const rows = (products?.data || []).map(p => ({
+                name: p.name,
+                category: p.category,
+                price: p.price,
+                cost: p.cost,
+                stock: p.stock,
+              }))
+              exportToCsv('products.csv', rows)
+            }}
+            className="btn btn-secondary"
+          >
+            Export CSV
+          </button>
         <button 
           onClick={() => setShowAddModal(true)}
           className="btn btn-primary mt-4 sm:mt-0"
@@ -119,6 +136,7 @@ const Products = () => {
           <Plus className="h-4 w-4 mr-2" />
           Add Product
         </button>
+        </div>
       </div>
 
       {/* Filters */}

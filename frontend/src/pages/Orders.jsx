@@ -19,6 +19,7 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { useLanguage } from '../contexts/LanguageContext'
 import NewOrderModal from '../components/NewOrderModal'
+import { printOrderReceipt } from '../utils/print'
 
 const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -252,6 +253,13 @@ const Orders = () => {
                     <div className="flex space-x-2">
                       <button className="text-primary-600 hover:text-primary-900">
                         <Eye className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => printOrderReceipt(order)}
+                        title="Print"
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        🖨️
                       </button>
                       <button className="text-gray-600 hover:text-gray-900">
                         <Edit className="h-4 w-4" />

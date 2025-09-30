@@ -3,6 +3,7 @@ const router = express.Router();
 const Inventory = require('../models/Inventory');
 const Product = require('../models/Product');
 const { body, validationResult } = require('express-validator');
+const { notifyLowStock } = require('../utils/notify');
 
 // Get inventory status
 router.get('/', async (req, res) => {
@@ -64,6 +65,12 @@ router.patch('/:id/quantity', [
       return res.status(404).json({ message: 'Inventory record not found' });
     }
     
+    // If low or equal to threshold, send alert (non-blocking)
+    try {
+      if (inventory.quantity <= inventory.minQuantity) {
+        await notifyLowStock([inventory]);
+      }
+    } catch (_) {}
     res.json(inventory);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -104,6 +111,12 @@ router.post('/add-stock', [
     }
     
     await inventory.populate('product', 'name price cost category');
+    // If still at/below threshold after adding, alert
+    try {
+      if (inventory.quantity <= inventory.minQuantity) {
+        await notifyLowStock([inventory]);
+      }
+    } catch (_) {}
     res.json(inventory);
   } catch (error) {
     res.status(500).json({ message: error.message });

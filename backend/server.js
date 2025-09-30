@@ -4,6 +4,8 @@ const connectDB = require('./config/database');
 require('dotenv').config();
 
 const app = express();
+const Inventory = require('./models/Inventory');
+const { notifyLowStock } = require('./utils/notify');
 
 // Connect to MongoDB
 connectDB();
@@ -46,4 +48,17 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
+  // Periodic low-stock check (hourly)
+  const intervalMs = Number(process.env.LOW_STOCK_CHECK_INTERVAL_MS || 60 * 60 * 1000);
+  setInterval(async () => {
+    try {
+      const lowStockItems = await Inventory.find({ $expr: { $lte: ['$quantity', '$minQuantity'] } }).populate('product', 'name');
+      if (lowStockItems && lowStockItems.length > 0) {
+        await notifyLowStock(lowStockItems);
+      }
+    } catch (err) {
+      // log but don't crash
+      console.error('Low-stock scheduler error:', err.message);
+    }
+  }, intervalMs);
 });

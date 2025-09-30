@@ -13,6 +13,7 @@ import Customers from './pages/Customers'
 import Inventory from './pages/Inventory'
 import Reports from './pages/ReportsSimple'
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import AuditLogs from './pages/AuditLogs'
 
 const queryClient = new QueryClient()
@@ -27,6 +28,7 @@ function App() {
               <Layout>
                 <Routes>
                   <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/orders" element={<ProtectedRoute roles={["admin", "manager", "cashier"]}><Orders /></ProtectedRoute>} />
                   <Route path="/products" element={<ProtectedRoute roles={["admin", "manager"]}><Products /></ProtectedRoute>} />

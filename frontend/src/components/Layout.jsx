@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   Home, 
   ShoppingCart, 
@@ -11,16 +11,20 @@ import {
   Phone,
   Sun,
   Moon,
-  Globe
+  Globe,
+  Shield
 } from 'lucide-react'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useAuth } from '../contexts/AuthContext'
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const { t, language, isDarkMode, changeLanguage, toggleDarkMode } = useLanguage()
+  const { user, logout } = useAuth()
 
-  const navigation = [
+  const baseNavigation = [
     { name: t('nav.dashboard'), href: '/', icon: Home },
     { name: t('nav.orders'), href: '/orders', icon: ShoppingCart },
     { name: t('nav.products'), href: '/products', icon: Package },
@@ -29,12 +33,21 @@ const Layout = ({ children }) => {
     { name: t('nav.reports'), href: '/reports', icon: BarChart3 },
   ]
 
+  const navigation = [...baseNavigation]
+  if (user && (user.role === 'admin' || user.role === 'manager')) {
+    navigation.push({ name: 'Audit Logs', href: '/audit', icon: Shield })
+  }
+
   const isActive = (path) => {
     if (path === '/') {
       return location.pathname === '/'
     }
     return location.pathname.startsWith(path)
   }
+
+  const onLogin = () => navigate('/login')
+  const onSignup = () => navigate('/signup')
+  const onLogout = () => logout()
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -142,6 +155,17 @@ const Layout = ({ children }) => {
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {new Date().toLocaleDateString('si-LK')}
             </div>
+            {!user ? (
+              <div className="flex items-center gap-2">
+                <button onClick={onLogin} className="ml-2 px-3 py-1.5 rounded bg-blue-600 text-white text-sm">Login</button>
+                <button onClick={onSignup} className="ml-2 px-3 py-1.5 rounded bg-gray-200 text-sm">Sign up</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700 dark:text-gray-200">{user.name} ({user.role})</span>
+                <button onClick={onLogout} className="px-3 py-1.5 rounded bg-gray-200 dark:bg-gray-700 text-sm">Logout</button>
+              </div>
+            )}
           </div>
         </div>
 

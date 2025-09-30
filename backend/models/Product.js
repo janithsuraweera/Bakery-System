@@ -41,6 +41,12 @@ const productSchema = new mongoose.Schema({
   },
   image: {
     type: String
+  },
+  barcode: {
+    type: String,
+    trim: true,
+    index: true,
+    unique: false
   }
 }, {
   timestamps: true

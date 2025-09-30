@@ -18,6 +18,7 @@ const NewOrderModal = ({ isOpen, onClose }) => {
   })
   const [selectedProduct, setSelectedProduct] = useState('')
   const [quantity, setQuantity] = useState(1)
+  const [barcode, setBarcode] = useState('')
   
   const queryClient = useQueryClient()
   const { t } = useLanguage()
@@ -26,6 +27,56 @@ const NewOrderModal = ({ isOpen, onClose }) => {
     ['products'],
     () => productsAPI.getAll()
   )
+
+  // Camera-based scanner using BarcodeDetector if available
+  // Lightweight inline so no extra deps
+  const startCameraScan = async () => {
+    try {
+      // Only run if supported
+      // eslint-disable-next-line no-undef
+      const Supported = 'BarcodeDetector' in window
+      if (!Supported) {
+        toast.error('Barcode scanning not supported on this browser')
+        return
+      }
+      // eslint-disable-next-line no-undef
+      const detector = new window.BarcodeDetector({ formats: ['ean_13', 'code_128', 'ean_8', 'qr_code'] })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      const video = document.createElement('video')
+      video.srcObject = stream
+      await video.play()
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      let stopped = false
+      const stop = () => {
+        stopped = true
+        stream.getTracks().forEach(t => t.stop())
+        video.remove()
+      }
+
+      const tick = async () => {
+        if (stopped) return
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        ctx.drawImage(video, 0, 0)
+        const bitmap = await createImageBitmap(canvas)
+        const codes = await detector.detect(bitmap)
+        if (codes && codes.length > 0) {
+          const code = codes[0].rawValue
+          setBarcode(code)
+          handleScanAdd()
+          stop()
+          return
+        }
+        requestAnimationFrame(tick)
+      }
+      tick()
+      toast.success('Camera scanning started - point to barcode')
+    } catch (e) {
+      console.error(e)
+      toast.error('Cannot start camera scanning')
+    }
+  }
 
   const createOrderMutation = useMutation(
     (data) => ordersAPI.create(data),
@@ -81,6 +132,19 @@ const NewOrderModal = ({ isOpen, onClose }) => {
     
     setSelectedProduct('')
     setQuantity(1)
+  }
+
+  const handleScanAdd = () => {
+    if (!barcode) return
+    const product = products?.data?.find(p => p.barcode && p.barcode.toString() === barcode.toString())
+    if (!product) {
+      toast.error('Product not found for this barcode')
+      return
+    }
+    setSelectedProduct(product._id)
+    setQuantity(1)
+    setBarcode('')
+    setTimeout(() => addItem(), 0)
   }
 
   const removeItem = (productId) => {
@@ -212,6 +276,19 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                 <div className="space-y-4">
                   <h4 className="text-md font-medium text-gray-900 dark:text-white">Add Items</h4>
                   
+                  {/* Manual barcode input */}
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      className="input flex-1"
+                      placeholder="Scan barcode or type here"
+                      value={barcode}
+                      onChange={(e) => setBarcode(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleScanAdd(); } }}
+                    />
+                    <button type="button" onClick={handleScanAdd} className="btn btn-secondary">Add</button>
+                  </div>
+
                   <div className="flex space-x-2">
                     <select
                       className="input flex-1"
@@ -240,6 +317,13 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                       className="btn btn-primary"
                     >
                       <Plus className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={startCameraScan}
+                      className="btn btn-secondary"
+                    >
+                      Scan
                     </button>
                   </div>
 

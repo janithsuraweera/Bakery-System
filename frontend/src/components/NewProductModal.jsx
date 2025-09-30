@@ -12,6 +12,7 @@ const defaultForm = {
   description: '',
   stock: 0,
   minStock: 5,
+  barcode: ''
 }
 
 const NewProductModal = ({ isOpen, onClose }) => {
@@ -99,6 +100,10 @@ const NewProductModal = ({ isOpen, onClose }) => {
                 <div className="sm:col-span-2">
                   <label className="label">Description</label>
                   <textarea className="input" rows="3" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="label">Barcode (optional)</label>
+                  <input className="input" value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} placeholder="Scan or type barcode" />
                 </div>
               </div>
             </div>

@@ -11,17 +11,22 @@ import {
   Clock,
   Phone,
   Utensils,
-  Package
+  Package,
+  ShoppingCart
 } from 'lucide-react'
 import { ordersAPI } from '../services/api'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../contexts/LanguageContext'
+import NewOrderModal from '../components/NewOrderModal'
 
 const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [serviceFilter, setServiceFilter] = useState('')
+  const [showNewOrderModal, setShowNewOrderModal] = useState(false)
   const queryClient = useQueryClient()
+  const { t } = useLanguage()
 
   const { data: orders, isLoading } = useQuery(
     ['orders', { searchTerm, statusFilter, serviceFilter }],
@@ -103,12 +108,15 @@ const Orders = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600">Manage and track all orders</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('orders.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('orders.subtitle')}</p>
         </div>
-        <button className="btn btn-primary mt-4 sm:mt-0">
+        <button 
+          onClick={() => setShowNewOrderModal(true)}
+          className="btn btn-primary mt-4 sm:mt-0"
+        >
           <Plus className="h-4 w-4 mr-2" />
-          New Order
+          {t('orders.newOrder')}
         </button>
       </div>
 
@@ -293,6 +301,12 @@ const Orders = () => {
           </div>
         )}
       </div>
+
+      {/* New Order Modal */}
+      <NewOrderModal 
+        isOpen={showNewOrderModal}
+        onClose={() => setShowNewOrderModal(false)}
+      />
     </div>
   )
 }

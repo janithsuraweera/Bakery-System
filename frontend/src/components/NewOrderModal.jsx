@@ -10,6 +10,9 @@ const NewOrderModal = ({ isOpen, onClose }) => {
     customerPhone: '',
     paymentMethod: 'cash',
     serviceType: 'takeaway',
+    discount: 0,
+    cashAmount: 0,
+    cardAmount: 0,
     notes: '',
     items: []
   })
@@ -35,6 +38,9 @@ const NewOrderModal = ({ isOpen, onClose }) => {
           customerPhone: '',
           paymentMethod: 'cash',
           serviceType: 'takeaway',
+          discount: 0,
+          cashAmount: 0,
+          cardAmount: 0,
           notes: '',
           items: []
         })
@@ -98,10 +104,11 @@ const NewOrderModal = ({ isOpen, onClose }) => {
   }
 
   const calculateTotal = () => {
-    return orderData.items.reduce((total, item) => {
+    const subtotal = orderData.items.reduce((total, item) => {
       const product = products?.data?.find(p => p._id === item.productId)
       return total + (product?.price || 0) * item.quantity
     }, 0)
+    return Math.max(0, subtotal - Number(orderData.discount || 0))
   }
 
   const handleSubmit = (e) => {
@@ -117,7 +124,10 @@ const NewOrderModal = ({ isOpen, onClose }) => {
       items: orderData.items.map(item => ({
         productId: item.productId,
         quantity: item.quantity
-      }))
+      })),
+      discount: Number(orderData.discount || 0),
+      cashAmount: Number(orderData.cashAmount || 0),
+      cardAmount: Number(orderData.cardAmount || 0)
     }
 
     createOrderMutation.mutate(orderPayload)
@@ -284,6 +294,38 @@ const NewOrderModal = ({ isOpen, onClose }) => {
 
                   {/* Total */}
                   <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                      <div>
+                        <label className="label">Discount (Rs.)</label>
+                        <input
+                          type="number"
+                          className="input"
+                          min="0"
+                          value={orderData.discount}
+                          onChange={(e) => setOrderData(prev => ({ ...prev, discount: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Cash Amount (Rs.)</label>
+                        <input
+                          type="number"
+                          className="input"
+                          min="0"
+                          value={orderData.cashAmount}
+                          onChange={(e) => setOrderData(prev => ({ ...prev, cashAmount: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Card Amount (Rs.)</label>
+                        <input
+                          type="number"
+                          className="input"
+                          min="0"
+                          value={orderData.cardAmount}
+                          onChange={(e) => setOrderData(prev => ({ ...prev, cardAmount: e.target.value }))}
+                        />
+                      </div>
+                    </div>
                     <div className="flex justify-between items-center text-lg font-semibold text-gray-900 dark:text-white">
                       <span>{t('common.total')}:</span>
                       <span>Rs. {calculateTotal().toLocaleString()}</span>
